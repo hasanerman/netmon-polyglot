@@ -9,6 +9,20 @@
 #define ETH_HEADER_LEN 14
 #define PCAP_HEADER_LEN 24
 #define COPY_CHUNK 4096
+#define WAIT_ROUNDS 10000
+#define WAIT_STEP_MS 1
+
+#ifdef _WIN32
+#include <windows.h>
+static void sleep_ms(unsigned ms) { Sleep(ms); }
+#else
+#include <time.h>
+static void sleep_ms(unsigned ms)
+{
+    struct timespec ts = {0, (long)ms * 1000000L};
+    nanosleep(&ts, NULL);
+}
+#endif
 
 static const char *g_sample = "tests/data/sample.pcap";
 static const char *g_tmp_bad = "build/tmp_bad_magic.pcap";
@@ -112,7 +126,9 @@ static void test_finished_flag(void)
     }
     CHECK(sniffer_poll_finished(s, &status) == 0);
     CHECK(sniffer_start(s) == SNIFFER_OK);
-    while (sniffer_poll_finished(s, &status) == 0 && rounds++ < 100000) {
+    // asan altinda yavas ci makinesinde de yetsin diye sure bazli bekle
+    while (sniffer_poll_finished(s, &status) == 0 && rounds++ < WAIT_ROUNDS) {
+        sleep_ms(WAIT_STEP_MS);
     }
     CHECK(status == SNIFFER_OK);
     CHECK(seen.frames == SAMPLE_FRAMES);

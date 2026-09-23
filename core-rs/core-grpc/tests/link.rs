@@ -133,15 +133,14 @@ fn wait_for(mut cond: impl FnMut() -> bool) -> bool {
 }
 
 fn receive_one(link: &AnalyticsLink, id: u64, src: &str) -> AnomalyScore {
-    let mut got = Vec::new();
+    let mut found = None;
+    // yavas makinede ayni batch birden cok kez gidebilir, onceki fazlaliklari atla
     assert!(wait_for(|| {
-        if got.is_empty() {
-            link.offer(batch(id, src));
-        }
-        got.extend(link.drain_scores());
-        !got.is_empty()
+        link.offer(batch(id, src));
+        found = link.drain_scores().into_iter().find(|s| s.batch_id == id);
+        found.is_some()
     }));
-    got.remove(0)
+    found.unwrap()
 }
 
 #[test]
