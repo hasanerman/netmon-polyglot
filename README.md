@@ -1,5 +1,7 @@
 # netmon-polyglot - Network Security Monitor in C, Rust, C# and Python
 
+[![ci](https://github.com/hasanerman/netmon-polyglot/actions/workflows/ci.yml/badge.svg)](https://github.com/hasanerman/netmon-polyglot/actions/workflows/ci.yml)
+
 A modular network security monitor where every layer is written in the language that suits it best:
 
 - **C** captures raw frames (Npcap / libpcap, loaded at runtime) or replays pcap files
@@ -52,7 +54,7 @@ Two integration styles are used on purpose:
 
 ## Repository layout
 
-120 tracked files.
+111 tracked files.
 
 ```
 07-network-security-monitor/
