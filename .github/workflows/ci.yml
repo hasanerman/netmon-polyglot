@@ -1,0 +1,81 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  native:
+    name: native (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: c sniffer (msvc)
+        if: runner.os == 'Windows'
+        shell: cmd
+        working-directory: sniffer-c
+        run: build.bat && build\test_replay.exe && build\test_device.exe
+
+      - name: c sniffer (gcc, asan + ubsan)
+        if: runner.os == 'Linux'
+        working-directory: sniffer-c
+        run: make asan
+
+      - name: rust clippy
+        run: cargo clippy --manifest-path core-rs/Cargo.toml --all-targets -- -D warnings
+
+      - name: rust tests
+        run: cargo test --manifest-path core-rs/Cargo.toml
+
+      - name: abi header is up to date
+        shell: bash
+        run: git diff --exit-code -- contracts/core_ffi.h
+
+      - name: c# build and tests
+        run: dotnet test ui-cs/NetMonitor.slnx -c Release
+
+  python:
+    name: python analytics
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: analytics-py
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: install
+        run: pip install -e ".[dev]"
+
+      - name: generate grpc stubs
+        run: python scripts/gen_proto.py
+
+      - name: ruff
+        run: ruff check src tests scripts
+
+      - name: mypy
+        run: mypy src
+
+      - name: pytest
+        run: pytest -q

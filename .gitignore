@@ -1,0 +1,15 @@
+target/
+build/
+bin/
+obj/
+__pycache__/
+*.pyc
+.venv/
+analytics-py/src/analytics/gen/
+*.pcap
+!sniffer-c/tests/data/*.pcap
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.pdb

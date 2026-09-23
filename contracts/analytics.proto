@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package netmon.analytics.v1;
+
+service Analytics {
+  rpc Analyze(stream FlowBatch) returns (stream AnomalyScore);
+  rpc Health(HealthRequest) returns (HealthReply);
+}
+
+message FlowFeatures {
+  string src = 1;
+  string dst = 2;
+  uint32 src_port = 3;
+  uint32 dst_port = 4;
+  uint32 proto = 5;
+  uint64 packets_fwd = 6;
+  uint64 packets_rev = 7;
+  uint64 bytes_fwd = 8;
+  uint64 bytes_rev = 9;
+  uint64 duration_us = 10;
+  uint32 tcp_flags = 11;
+  uint64 last_seen_us = 12;
+}
+
+message FlowBatch {
+  uint64 batch_id = 1;
+  uint64 window_end_us = 2;
+  repeated FlowFeatures flows = 3;
+}
+
+message AnomalyScore {
+  uint64 batch_id = 1;
+  string host = 2;
+  double score = 3;
+  double threshold = 4;
+  string reason = 5;
+  uint64 ts_us = 6;
+}
+
+message HealthRequest {}
+
+message HealthReply {
+  string model_state = 1;
+  uint64 samples_seen = 2;
+  double threshold = 3;
+}

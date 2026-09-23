@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "netmon-analytics"
+version = "0.1.0"
+description = "anomaly scoring service for the netmon rust core"
+requires-python = ">=3.11"
+dependencies = [
+  "grpcio>=1.60",
+  "protobuf>=5.26",
+  "numpy>=1.26",
+  "scikit-learn>=1.4",
+]
+
+[project.optional-dependencies]
+dev = ["grpcio-tools>=1.60", "pytest>=8", "ruff>=0.5", "mypy>=1.10", "types-protobuf"]
+
+[project.scripts]
+netmon-analytics = "analytics.server:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+extend-exclude = ["src/analytics/gen"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "N", "SIM", "RUF"]
+
+[tool.mypy]
+strict = true
+mypy_path = "src"
+exclude = ["src/analytics/gen/"]
+
+[[tool.mypy.overrides]]
+module = ["analytics.gen.*"]
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = ["analytics.server"]
+disallow_untyped_calls = false
+
+[[tool.mypy.overrides]]
+module = ["grpc", "grpc.*", "sklearn", "sklearn.*"]
+ignore_missing_imports = true

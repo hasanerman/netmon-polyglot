@@ -1,0 +1,125 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:NetMonitor.App.ViewModels"
+        xmlns:views="using:NetMonitor.App.Views"
+        xmlns:lvc="using:LiveChartsCore.SkiaSharpView.Avalonia"
+        x:Class="NetMonitor.App.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="NetMonitor - polyglot network security monitor"
+        Width="1360" Height="860" MinWidth="1000" MinHeight="640"
+        Background="{StaticResource BgBrush}">
+
+  <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="16">
+
+    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,14">
+      <StackPanel VerticalAlignment="Center">
+        <TextBlock Text="NetMonitor" FontSize="22" FontWeight="Bold" Foreground="{StaticResource TextBrush}" />
+        <TextBlock Classes="caption" Text="C capture  /  Rust core  /  C# ui  /  Python analytics" />
+      </StackPanel>
+      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+        <ComboBox Width="320" ItemsSource="{Binding Sources}" SelectedItem="{Binding SelectedSource}"
+                  IsEnabled="{Binding !IsCapturing}" />
+        <CheckBox Content="Realtime replay" IsChecked="{Binding RealtimeReplay}" IsEnabled="{Binding !IsCapturing}"
+                  Foreground="{StaticResource MutedBrush}" />
+        <Button Content="Open pcap..." Command="{Binding BrowseFileCommand}" />
+        <Button Content="Rules..." Command="{Binding LoadRulesCommand}" />
+        <Button Classes="accent" Content="Start" Command="{Binding StartCommand}" MinWidth="80" />
+        <Button Content="Stop" Command="{Binding StopCommand}" MinWidth="80" />
+      </StackPanel>
+    </Grid>
+
+    <UniformGrid Grid.Row="1" Columns="5" Margin="0,0,0,14">
+      <Border Classes="card" Margin="0,0,10,0">
+        <StackPanel>
+          <TextBlock Classes="caption" Text="PACKETS / S" />
+          <TextBlock Classes="kpi" Text="{Binding PacketRate}" Foreground="{StaticResource AccentBrush}" />
+        </StackPanel>
+      </Border>
+      <Border Classes="card" Margin="0,0,10,0">
+        <StackPanel>
+          <TextBlock Classes="caption" Text="THROUGHPUT (MBIT/S)" />
+          <TextBlock Classes="kpi" Text="{Binding Throughput}" Foreground="{StaticResource Accent2Brush}" />
+        </StackPanel>
+      </Border>
+      <Border Classes="card" Margin="0,0,10,0">
+        <StackPanel>
+          <TextBlock Classes="caption" Text="ACTIVE FLOWS" />
+          <TextBlock Classes="kpi" Text="{Binding ActiveFlows}" />
+        </StackPanel>
+      </Border>
+      <Border Classes="card" Margin="0,0,10,0">
+        <StackPanel>
+          <TextBlock Classes="caption" Text="TOTAL" />
+          <TextBlock Classes="kpi" Text="{Binding TotalPackets}" />
+          <TextBlock Classes="caption" Text="{Binding TotalBytes}" />
+        </StackPanel>
+      </Border>
+      <Border Classes="card">
+        <StackPanel>
+          <TextBlock Classes="caption" Text="ALERTS (CRIT / HIGH)" />
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <TextBlock Classes="kpi" Text="{Binding Alerts.CriticalCount}" Foreground="{StaticResource DangerBrush}" />
+            <TextBlock Classes="kpi" Text="/" Foreground="{StaticResource MutedBrush}" />
+            <TextBlock Classes="kpi" Text="{Binding Alerts.HighCount}" Foreground="#FBBF24" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </UniformGrid>
+
+    <Grid Grid.Row="2" ColumnDefinitions="2*,*">
+      <Grid RowDefinitions="*,*" Margin="0,0,10,0">
+        <Border Classes="card" Margin="0,0,0,10">
+          <DockPanel>
+            <TextBlock DockPanel.Dock="Top" Classes="title" Text="Traffic rate" />
+            <lvc:CartesianChart Series="{Binding RateSeries}" XAxes="{Binding RateXAxes}" YAxes="{Binding RateYAxes}"
+                                LegendPosition="Hidden" TooltipPosition="Hidden" />
+          </DockPanel>
+        </Border>
+        <Border Grid.Row="1" Classes="card">
+          <DockPanel>
+            <TextBlock DockPanel.Dock="Top" Classes="title" Text="Top flows by bytes" />
+            <DataGrid ItemsSource="{Binding TopFlows}" IsReadOnly="True" CanUserSortColumns="False"
+                      AutoGenerateColumns="False" HeadersVisibility="Column">
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="Proto" Binding="{ReflectionBinding Protocol}" Width="84" />
+                <DataGridTextColumn Header="Endpoint A" Binding="{ReflectionBinding EndpointA}" Width="*" />
+                <DataGridTextColumn Header="Endpoint B" Binding="{ReflectionBinding EndpointB}" Width="*" />
+                <DataGridTextColumn Header="Packets" Binding="{ReflectionBinding Packets}" Width="100" />
+                <DataGridTextColumn Header="Bytes" Binding="{ReflectionBinding Bytes}" Width="100" />
+                <DataGridTextColumn Header="Duration" Binding="{ReflectionBinding Duration}" Width="110" />
+              </DataGrid.Columns>
+            </DataGrid>
+          </DockPanel>
+        </Border>
+      </Grid>
+
+      <Grid Grid.Column="1" RowDefinitions="Auto,*">
+        <Border Classes="card" Margin="0,0,0,10">
+          <DockPanel>
+            <TextBlock DockPanel.Dock="Top" Classes="title" Text="Protocol mix" />
+            <StackPanel DockPanel.Dock="Right" VerticalAlignment="Center" Spacing="6" Margin="8,0,0,0" MinWidth="110">
+              <TextBlock Text="{Binding TcpShare, StringFormat='TCP    {0}'}" Foreground="{StaticResource AccentBrush}" />
+              <TextBlock Text="{Binding UdpShare, StringFormat='UDP    {0}'}" Foreground="{StaticResource Accent2Brush}" />
+              <TextBlock Text="{Binding IcmpShare, StringFormat='ICMP   {0}'}" Foreground="#34D399" />
+              <TextBlock Text="{Binding OtherShare, StringFormat='Other  {0}'}" Foreground="#64748B" />
+            </StackPanel>
+            <lvc:PieChart Series="{Binding ProtocolSeries}" Height="170" LegendPosition="Hidden" />
+          </DockPanel>
+        </Border>
+        <Border Grid.Row="1" Classes="card">
+          <views:AlertsView DataContext="{Binding Alerts}" />
+        </Border>
+      </Grid>
+    </Grid>
+
+    <Grid Grid.Row="3" ColumnDefinitions="*,Auto" Margin="0,12,0,0">
+      <TextBlock Text="{Binding StatusMessage}" Foreground="{StaticResource MutedBrush}" TextTrimming="CharacterEllipsis" />
+      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="16">
+        <TextBlock Classes="caption" Text="{Binding AnalyticsInfo}" />
+        <TextBlock Classes="caption" Text="{Binding RulesInfo}" />
+        <TextBlock Classes="caption" Text="{Binding ParseErrors, StringFormat='parse errors {0}'}" />
+        <TextBlock Classes="caption" Text="{Binding Dropped, StringFormat='dropped {0}'}" />
+      </StackPanel>
+    </Grid>
+  </Grid>
+</Window>

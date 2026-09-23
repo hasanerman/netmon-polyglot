@@ -1,0 +1,13 @@
+[package]
+name = "netcore-engine"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+lru.workspace = true
+serde.workspace = true
+serde_yaml.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true

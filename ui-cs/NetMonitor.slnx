@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/NetMonitor.App/NetMonitor.App.csproj" />
+    <Project Path="src/NetMonitor.Interop/NetMonitor.Interop.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/NetMonitor.Tests/NetMonitor.Tests.csproj" />
+  </Folder>
+</Solution>

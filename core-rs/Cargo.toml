@@ -1,0 +1,19 @@
+[workspace]
+resolver = "2"
+members = ["core", "core-ffi", "core-grpc", "cli"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[workspace.dependencies]
+netcore-engine = { path = "core" }
+lru = "0.12"
+serde = { version = "1", features = ["derive"] }
+serde_yaml = "0.9"
+proptest = "1"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1

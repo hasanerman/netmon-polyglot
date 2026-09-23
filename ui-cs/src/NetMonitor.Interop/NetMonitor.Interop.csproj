@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+    <NativeCoreFile>netcore.dll</NativeCoreFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
+    <NativeCoreFile>libnetcore.so</NativeCoreFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+    <NativeCoreFile>libnetcore.dylib</NativeCoreFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="NetMonitor.Tests" />
+  </ItemGroup>
+
+  <Target Name="BuildRustCore" BeforeTargets="BeforeBuild" Condition="'$(SkipRustBuild)' != 'true'">
+    <Exec Command="cargo build --release -p netcore-ffi" WorkingDirectory="$(RustCoreDir)" />
+  </Target>
+
+  <ItemGroup>
+    <None Include="$(RustTargetDir)$(NativeCoreFile)" Link="$(NativeCoreFile)" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+  </ItemGroup>
+
+</Project>

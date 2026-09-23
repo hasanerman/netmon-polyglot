@@ -1,0 +1,12 @@
+[package]
+name = "netmon-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "netmon"
+path = "src/main.rs"
+
+[dependencies]
+netcore-engine.workspace = true

@@ -1,0 +1,18 @@
+[package]
+name = "netcore-ffi"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+build = "build.rs"
+
+[lib]
+name = "netcore"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+netcore-engine.workspace = true
+netcore-grpc = { path = "../core-grpc" }
+
+[build-dependencies]
+cc = "1"
+cbindgen = { version = "0.29", default-features = false }

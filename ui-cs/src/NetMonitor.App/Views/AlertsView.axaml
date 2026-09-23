@@ -1,0 +1,57 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:NetMonitor.App.ViewModels"
+             xmlns:views="using:NetMonitor.App.Views"
+             x:Class="NetMonitor.App.Views.AlertsView"
+             x:DataType="vm:AlertsViewModel">
+
+  <DockPanel>
+    <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+      <TextBlock Classes="title" Text="Alerts" Margin="0" VerticalAlignment="Center" />
+      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+        <TextBlock Classes="caption" Text="{Binding CriticalCount, StringFormat='crit {0}'}" Foreground="#F87171" />
+        <TextBlock Classes="caption" Text="{Binding HighCount, StringFormat='high {0}'}" Foreground="#FBBF24" />
+        <TextBlock Classes="caption" Text="{Binding MediumCount, StringFormat='med {0}'}" Foreground="#A78BFA" />
+        <TextBlock Classes="caption" Text="{Binding LowCount, StringFormat='low {0}'}" Foreground="#22D3EE" />
+        <Button Content="Clear" Command="{Binding ClearCommand}" Padding="8,2" FontSize="12" />
+      </StackPanel>
+    </Grid>
+
+    <Border DockPanel.Dock="Bottom" Margin="0,8,0,0" Padding="10" CornerRadius="6" Background="#0B1020"
+            IsVisible="{Binding Selected, Converter={x:Static ObjectConverters.IsNotNull}}">
+      <StackPanel Spacing="2">
+        <TextBlock Text="{Binding Selected.RuleId}" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" />
+        <TextBlock Text="{Binding Selected.Message}" TextWrapping="Wrap" Foreground="{StaticResource TextBrush}" />
+        <TextBlock Classes="caption">
+          <Run Text="source " /><Run Text="{Binding Selected.Source}" />
+          <Run Text="  /  via " /><Run Text="{Binding Selected.Origin}" />
+          <Run Text="  /  score " /><Run Text="{Binding Selected.Score}" />
+        </TextBlock>
+      </StackPanel>
+    </Border>
+
+    <Panel>
+      <TextBlock Classes="caption" Text="No alerts yet. Try the port scan demo."
+                 HorizontalAlignment="Center" VerticalAlignment="Center"
+                 IsVisible="{Binding !Items.Count}" />
+      <ListBox ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}" Background="Transparent">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:AlertRow">
+            <Grid ColumnDefinitions="4,Auto,*" Margin="0,2">
+              <Border Background="{Binding Level, Converter={x:Static views:SeverityBrushConverter.Instance}}" CornerRadius="2" />
+              <StackPanel Grid.Column="1" Margin="10,0" Width="62">
+                <TextBlock Text="{Binding Time}" FontSize="12" Foreground="{StaticResource MutedBrush}" />
+                <TextBlock Text="{Binding Severity}" FontSize="10" FontWeight="Bold"
+                           Foreground="{Binding Level, Converter={x:Static views:SeverityBrushConverter.Instance}}" />
+              </StackPanel>
+              <StackPanel Grid.Column="2">
+                <TextBlock Text="{Binding RuleId}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" />
+                <TextBlock Text="{Binding Message}" FontSize="12" Foreground="{StaticResource MutedBrush}" TextTrimming="CharacterEllipsis" />
+              </StackPanel>
+            </Grid>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </Panel>
+  </DockPanel>
+</UserControl>

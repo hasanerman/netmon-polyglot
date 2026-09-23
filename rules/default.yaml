@@ -1,0 +1,35 @@
+version: 1
+rules:
+  - id: port-scan
+    kind: port_scan
+    severity: high
+    description: one source sends bare SYNs to many distinct ports
+    window_secs: 10
+    threshold: 100
+    cooldown_secs: 15
+
+  - id: host-sweep
+    kind: host_sweep
+    severity: medium
+    description: one source talks to many distinct hosts
+    window_secs: 30
+    threshold: 64
+    cooldown_secs: 30
+
+  - id: dns-tunnel
+    kind: dns_tunnel
+    severity: critical
+    description: long high-entropy dns labels, typical for data exfiltration
+    window_secs: 30
+    threshold: 20
+    cooldown_secs: 15
+    min_label_len: 30
+    min_entropy: 3.5
+
+  - id: packet-flood
+    kind: packet_rate
+    severity: medium
+    description: one source exceeds a packet budget
+    window_secs: 1
+    threshold: 5000
+    cooldown_secs: 30
