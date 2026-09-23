@@ -13,3 +13,4 @@ analytics-py/src/analytics/gen/
 .mypy_cache/
 .ruff_cache/
 *.pdb
+edu.md

@@ -157,8 +157,12 @@ impl Exporter {
 }
 
 pub fn features(key: &FlowKey, stats: &FlowStats) -> FlowFeatures {
-    // yuksek port genelde istemci tarafidir, akisi ona gore cevir
-    let client_is_b = key.b.port > key.a.port;
+    // yuksek port genelde istemcidir; icmp gibi portsuzda cok gonderen taraf
+    let client_is_b = match key.b.port.cmp(&key.a.port) {
+        std::cmp::Ordering::Greater => true,
+        std::cmp::Ordering::Less => false,
+        std::cmp::Ordering::Equal => stats.packets[1] > stats.packets[0],
+    };
     let (client, server, fwd, rev) = if client_is_b { (key.b, key.a, 1, 0) } else { (key.a, key.b, 0, 1) };
     FlowFeatures {
         src: client.addr.to_string(),
@@ -221,6 +225,16 @@ mod tests {
         let f = features(&key, &stats);
         assert_eq!((f.src.as_str(), f.src_port, f.dst.as_str(), f.dst_port), ("10.0.0.66", 49152, "10.0.0.5", 22));
         assert_eq!((f.packets_fwd, f.packets_rev, f.bytes_fwd, f.bytes_rev), (1, 3, 60, 300));
+    }
+
+    #[test]
+    fn portless_flow_is_oriented_from_the_sender() {
+        let (key, dir) = FlowKey::canonical(ep(30, 0), ep(1, 0), 1);
+        assert_eq!(key.a.addr, ep(1, 0).addr);
+        let mut stats = FlowStats::default();
+        stats.packets[dir as usize] = 4;
+        let f = features(&key, &stats);
+        assert_eq!((f.src.as_str(), f.dst.as_str(), f.packets_fwd), ("10.0.0.30", "10.0.0.1", 4));
     }
 
     #[test]
